@@ -5,37 +5,45 @@ use std::{
 };
 
 fn part1(values: &[u32]) -> Option<(u32, u32)> {
+    if values.is_empty() {
+        return None;
+    }
+
     // Find the pair of numbers that add to 2020
-    values
-        .iter()
-        .enumerate()
-        .take(values.len() - 1)
-        .find_map(|(i, a)| {
+    values.iter().enumerate().find_map(|(i, a)| {
+        if i + 1 < values.len() {
             values[i + 1..]
                 .iter()
                 .find(move |&b| a + b == 2020)
                 .map(|b| (*a, *b))
-        })
+        } else {
+            None
+        }
+    })
 }
 
 fn part2(values: &[u32]) -> Option<(u32, u32, u32)> {
+    if values.is_empty() {
+        return None;
+    }
+
     // Find the triple of numbers that add to 2020
-    values
-        .iter()
-        .enumerate()
-        .take(values.len() - 2)
-        .find_map(|(i, a)| {
-            values[i + 1..]
-                .iter()
-                .enumerate()
-                .take(values.len() - i - 1)
-                .find_map(|(j, b)| {
-                    values[i + j + 1..]
+    values.iter().enumerate().find_map(|(i, a)| {
+        if i + 2 < values.len() {
+            values[i + 1..].iter().enumerate().find_map(|(j, b)| {
+                if i + j + 2 < values.len() {
+                    values[i + j + 2..]
                         .iter()
                         .find(move |&c| a + b + c == 2020)
                         .map(|c| (*a, *b, *c))
-                })
-        })
+                } else {
+                    None
+                }
+            })
+        } else {
+            None
+        }
+    })
 }
 
 fn main() -> anyhow::Result<()> {
@@ -58,4 +66,42 @@ fn main() -> anyhow::Result<()> {
     println!("part 2: {} * {} * {} = {}", a, b, c, a * b * c);
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{part1, part2};
+
+    #[test]
+    fn part1_works() {
+        assert_eq!(part1(&[1010, 1010]), Some((1010, 1010)));
+        assert_eq!(part1(&[1010, 1011]), None);
+        assert_eq!(
+            part1(&[1, 2, 1, 0, 1, 1009, 1011, 4, 8, 9]),
+            Some((1009, 1011))
+        );
+        assert_eq!(part1(&[1009, 1011, 4, 8, 9]), Some((1009, 1011)));
+        assert_eq!(part1(&[1, 2, 1, 0, 1, 1009, 1011]), Some((1009, 1011)));
+        assert_eq!(part1(&[1009, 4, 9, 12, 1011]), Some((1009, 1011)));
+        assert_eq!(part1(&[1, 2, 1, 0, 1, 2020, 33, 4, 8, 9]), Some((0, 2020)));
+        assert_eq!(part1(&[1, 2, 1, 9, 1, 2020, 33, 4, 8, 9]), None);
+        assert_eq!(part1(&[]), None);
+    }
+
+    #[test]
+    fn part2_works() {
+        assert_eq!(part2(&[2000, 10, 10]), Some((2000, 10, 10)));
+        assert_eq!(part2(&[2000, 10, 11]), None);
+        assert_eq!(
+            part2(&[1, 2, 1, 0, 2000, 11, 9, 4, 8, 9]),
+            Some((2000, 11, 9))
+        );
+        assert_eq!(part2(&[2000, 11, 9, 4, 8, 9]), Some((2000, 11, 9)));
+        assert_eq!(part2(&[1, 2, 1, 0, 2000, 11, 9]), Some((2000, 11, 9)));
+        assert_eq!(part2(&[2000, 4, 11, 8, 6, 9]), Some((2000, 11, 9)));
+        assert_eq!(part2(&[2020, 0, 0]), Some((2020, 0, 0)));
+        assert_eq!(part2(&[2020, 0, 1]), None);
+        assert_eq!(part2(&[2020, 4, 1]), None);
+        assert_eq!(part2(&[]), None);
+    }
 }
