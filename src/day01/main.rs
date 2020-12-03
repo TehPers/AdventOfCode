@@ -1,8 +1,9 @@
 use anyhow::{anyhow, Context};
 use std::{
-    fs::File,
     io::{BufRead, BufReader},
 };
+
+const INPUT: &[u8] = include_bytes!("input.txt");
 
 fn part1(values: &[u32]) -> Option<(u32, u32)> {
     if values.is_empty() {
@@ -48,7 +49,7 @@ fn part2(values: &[u32]) -> Option<(u32, u32, u32)> {
 
 fn main() -> anyhow::Result<()> {
     // Read and parse the input file
-    let input = BufReader::new(File::open("input.txt").context("could not open input file")?);
+    let input = BufReader::new(INPUT);
     let values = input
         .lines()
         .map(|line| {
