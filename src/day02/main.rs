@@ -69,7 +69,7 @@ fn part_1(lines: &Vec<(Policy, &str)>) -> usize {
 fn part_2(lines: &Vec<(Policy, &str)>) -> usize {
     lines
         .iter()
-        .filter(|(policy, password)| {
+        .filter_map(|(policy, password)| {
             password
                 .chars()
                 .nth(policy.bounds.0 - 1)
@@ -80,7 +80,6 @@ fn part_2(lines: &Vec<(Policy, &str)>) -> usize {
                         .nth(policy.bounds.1 - 1)
                         .filter(|c| c == &policy.character),
                 )
-                .is_some()
         })
         .count()
 }
