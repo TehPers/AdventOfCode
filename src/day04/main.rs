@@ -77,11 +77,16 @@ fn part1(input: &'static [u8]) -> anyhow::Result<usize> {
     let valid = passports
         .into_iter()
         .filter(|passport| {
-            let mut required_fields: HashSet<_> = REQUIRED_FIELDS.iter().copied().collect();
-            passport.keys().for_each(|key| {
-                required_fields.remove(key);
-            });
-            required_fields.is_empty()
+            passport
+                .keys()
+                .fold(
+                    REQUIRED_FIELDS.iter().copied().collect(),
+                    |mut fields: HashSet<_>, key| {
+                        fields.remove(key);
+                        fields
+                    },
+                )
+                .is_empty()
         })
         .count();
 
@@ -104,7 +109,6 @@ fn part2(input: &'static [u8]) -> anyhow::Result<usize> {
     let valid = passports
         .into_iter()
         .filter(|passport| {
-            let mut required_fields: HashSet<&str> = REQUIRED_FIELDS.iter().copied().collect();
             passport
                 .iter()
                 .filter(|(&key, &value)| match key {
@@ -151,10 +155,14 @@ fn part2(input: &'static [u8]) -> anyhow::Result<usize> {
                     "pid" => value.len() == 9 && value.bytes().all(|b| b.is_ascii_digit()),
                     _ => true,
                 })
-                .for_each(|(key, _)| {
-                    required_fields.remove(key);
-                });
-            required_fields.is_empty()
+                .fold(
+                    REQUIRED_FIELDS.iter().copied().collect(),
+                    |mut fields: HashSet<_>, (key, _)| {
+                        fields.remove(key);
+                        fields
+                    },
+                )
+                .is_empty()
         })
         .count();
 
