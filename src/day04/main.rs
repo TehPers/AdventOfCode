@@ -2,8 +2,8 @@ use anyhow::{bail, Context};
 use nom::{
     alt, call, char,
     character::streaming::{alphanumeric1, digit1},
-    complete, do_parse, map, map_res, named, opt, preceded, separated_list0, separated_list1, tag,
-    take_while1, value,
+    complete, do_parse, exact, map, map_res, named, named_args, opt, preceded, separated_list0,
+    separated_list1, tag, take, take_while1, value,
 };
 use std::collections::{HashMap, HashSet};
 
@@ -53,15 +53,22 @@ named!(
     separated_list0!(complete!(parse_newline), complete!(parse_passport))
 );
 
+named_args!(
+    parse_fixed_width_num(digits: usize)<&str, u32>,
+    exact!(map_res!(take!(digits), |s: &str| s.parse()))
+);
+
 named!(
     parse_height<&str, Height>,
-    do_parse!(
-        value: map_res!(call!(digit1), |s: &str| s.parse())
-            >> height: alt!(
-                map!(tag!("cm"), |_| Height::Cm(value))
-                | map!(tag!("in"), |_| Height::In(value))
-            )
-            >> (height)
+    exact!(
+        do_parse!(
+            value: map_res!(call!(digit1), |s: &str| s.parse())
+                >> height: alt!(
+                    map!(tag!("cm"), |_| Height::Cm(value))
+                    | map!(tag!("in"), |_| Height::In(value))
+                )
+                >> (height)
+        )
     )
 );
 
@@ -112,47 +119,32 @@ fn part2(input: &'static [u8]) -> anyhow::Result<usize> {
             passport
                 .iter()
                 .filter(|(&key, &value)| match key {
-                    "byr" => {
-                        value.len() == 4
-                            && value
-                                .parse()
-                                .ok()
-                                .filter(|&n: &u32| n >= 1920 && n <= 2002)
-                                .is_some()
-                    }
-                    "iyr" => {
-                        value.len() == 4
-                            && value
-                                .parse()
-                                .ok()
-                                .filter(|&n: &u32| n >= 2010 && n <= 2020)
-                                .is_some()
-                    }
-                    "eyr" => {
-                        value.len() == 4
-                            && value
-                                .parse()
-                                .ok()
-                                .filter(|&n: &u32| n >= 2020 && n <= 2030)
-                                .is_some()
-                    }
+                    "byr" => parse_fixed_width_num(value, 4)
+                        .ok()
+                        .filter(|(_, n)| (1920..=2002).contains(n))
+                        .is_some(),
+                    "iyr" => parse_fixed_width_num(value, 4)
+                        .ok()
+                        .filter(|(_, n)| (2010..=2020).contains(n))
+                        .is_some(),
+                    "eyr" => parse_fixed_width_num(value, 4)
+                        .ok()
+                        .filter(|(_, n)| (2020..=2030).contains(n))
+                        .is_some(),
                     "hgt" => parse_height(value)
                         .ok()
-                        .filter(|(remainder, height)| {
-                            remainder.is_empty()
-                                && match height {
-                                    Height::Cm(value) => *value >= 150 && *value <= 193,
-                                    Height::In(value) => *value >= 59 && *value <= 76,
-                                }
+                        .filter(|(_, height)| match height {
+                            Height::Cm(value) => (150..=193).contains(value),
+                            Height::In(value) => (59..=76).contains(value),
                         })
                         .is_some(),
                     "hcl" => {
                         value.len() == 7
                             && value.as_bytes()[0] == b'#'
-                            && value.as_bytes()[1..].iter().all(|c| c.is_ascii_hexdigit())
+                            && value.as_bytes()[1..].iter().all(|b| b.is_ascii_hexdigit())
                     }
                     "ecl" => eye_colors.contains(value),
-                    "pid" => value.len() == 9 && value.bytes().all(|b| b.is_ascii_digit()),
+                    "pid" => parse_fixed_width_num(value, 9).is_ok(),
                     _ => true,
                 })
                 .fold(
