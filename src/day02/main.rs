@@ -56,7 +56,7 @@ named!(
     complete!(many0!(parse_line))
 );
 
-fn part_1(lines: &Vec<(Policy, &str)>) -> usize {
+fn part1(lines: &Vec<(Policy, &str)>) -> usize {
     lines
         .iter()
         .filter(|(policy, password)| {
@@ -66,7 +66,7 @@ fn part_1(lines: &Vec<(Policy, &str)>) -> usize {
         .count()
 }
 
-fn part_2(lines: &Vec<(Policy, &str)>) -> usize {
+fn part2(lines: &Vec<(Policy, &str)>) -> usize {
     lines
         .iter()
         .filter_map(|(policy, password)| {
@@ -94,8 +94,8 @@ fn main() -> anyhow::Result<()> {
         );
     }
 
-    println!("part 1: {}", part_1(&lines));
-    println!("part 2: {}", part_2(&lines));
+    println!("part 1: {}", part1(&lines));
+    println!("part 2: {}", part2(&lines));
 
     Ok(())
 }

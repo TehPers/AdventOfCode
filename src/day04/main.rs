@@ -1,4 +1,4 @@
-use anyhow::{bail, Context};
+use anyhow::Context;
 use nom::{
     alt, call, char,
     character::streaming::{alphanumeric1, digit1},
@@ -50,7 +50,10 @@ named!(
 
 named!(
     parse_passports<Vec<HashMap<&str, &str>>>,
-    separated_list0!(complete!(parse_newline), complete!(parse_passport))
+    exact!(separated_list0!(
+        complete!(parse_newline),
+        complete!(parse_passport)
+    ))
 );
 
 named_args!(
@@ -73,14 +76,7 @@ named!(
 );
 
 fn part1(input: &'static [u8]) -> anyhow::Result<usize> {
-    let (remainder, passports) = parse_passports(input).context("failed to parse input")?;
-    if !remainder.is_empty() {
-        bail!(
-            "input was not fully parsed (remainder: {:?})",
-            std::str::from_utf8(remainder)
-        );
-    }
-
+    let (_, passports) = parse_passports(input).context("failed to parse input")?;
     let valid = passports
         .into_iter()
         .filter(|passport| {
@@ -101,18 +97,12 @@ fn part1(input: &'static [u8]) -> anyhow::Result<usize> {
 }
 
 fn part2(input: &'static [u8]) -> anyhow::Result<usize> {
-    let (remainder, passports) = parse_passports(input).context("failed to parse input")?;
-    if !remainder.is_empty() {
-        bail!(
-            "input was not fully parsed (remainder: {:?})",
-            std::str::from_utf8(remainder)
-        );
-    }
-
+    let (_, passports) = parse_passports(input).context("failed to parse input")?;
     let eye_colors: HashSet<_> = ["amb", "blu", "brn", "gry", "grn", "hzl", "oth"]
         .iter()
         .copied()
         .collect();
+
     let valid = passports
         .into_iter()
         .filter(|passport| {
