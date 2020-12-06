@@ -7,9 +7,8 @@ use nom::{
     multi::separated_list0,
     named, IResult,
 };
-use std::io::{BufRead, BufReader};
 
-const INPUT: &[u8] = include_bytes!("input.txt");
+const INPUT: &str = include_str!("input.txt");
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug, Hash)]
 enum Instruction {
@@ -132,15 +131,13 @@ fn manhattan_dist((x1, y1): (i32, i32), (x2, y2): (i32, i32)) -> i32 {
     (x1 - x2).abs() + (y1 - y2).abs()
 }
 
-fn part1(input: &[u8]) -> anyhow::Result<i32> {
-    let paths = BufReader::new(input)
-        .lines()
-        .flat_map(|line| {
-            line.context("failure reading input file").map(|line| {
-                parse_segments(&line)
-                    .map(|(_, segment)| segment)
-                    .map_err(|error| anyhow!("failure parsing instructions: {}", error))
-            })
+fn part1(input: &str) -> anyhow::Result<i32> {
+    let paths = input
+        .split('\n')
+        .map(|line| {
+            parse_segments(&line)
+                .map(|(_, segment)| segment)
+                .map_err(|error| anyhow!("failure parsing instructions: {}", error))
         })
         .collect::<Result<Vec<_>, _>>()?;
 
@@ -164,15 +161,13 @@ fn part1(input: &[u8]) -> anyhow::Result<i32> {
         .context("not enough path segments")
 }
 
-fn part2(input: &[u8]) -> anyhow::Result<i32> {
-    let paths = BufReader::new(input)
-        .lines()
-        .flat_map(|line| {
-            line.context("failure reading input file").map(|line| {
-                parse_segments(&line)
-                    .map(|(_, segment)| segment)
-                    .map_err(|error| anyhow!("failure parsing instructions: {}", error))
-            })
+fn part2(input: &str) -> anyhow::Result<i32> {
+    let paths = input
+        .split('\n')
+        .map(|line| {
+            parse_segments(&line)
+                .map(|(_, segment)| segment)
+                .map_err(|error| anyhow!("failure parsing instructions: {}", error))
         })
         .collect::<Result<Vec<_>, _>>()?;
 
@@ -223,23 +218,4 @@ fn main() -> anyhow::Result<()> {
     println!("part 2: {}", part2(INPUT)?);
 
     Ok(())
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn segment_intersection() {
-        let s1 = Segment::Horizontal { x: (-1, 1), y: 0 };
-        let s2 = Segment::Vertical { x: 0, y: (0, 2) };
-        let s3 = Segment::Vertical { x: 0, y: (-2, 0) };
-        let s4 = Segment::Vertical { x: 1, y: (-1, 1) };
-        let s5 = Segment::Vertical { x: -1, y: (-1, 1) };
-
-        assert_eq!(s1.point_intersection(s2), Some((0, 0)));
-        assert_eq!(s1.point_intersection(s3), Some((0, 0)));
-        assert_eq!(s1.point_intersection(s4), Some((1, 0)));
-        assert_eq!(s1.point_intersection(s5), Some((-1, 0)));
-    }
 }
