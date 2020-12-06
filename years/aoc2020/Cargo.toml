@@ -1,0 +1,29 @@
+[package]
+name = "aoc2020"
+version = "0.1.0"
+authors = ["TehPers <tehperz@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+anyhow = "1"
+nom = "6"
+
+[[bin]]
+name = "y2020d01"
+path = "src/day01/main.rs"
+
+[[bin]]
+name = "y2020d02"
+path = "src/day02/main.rs"
+
+[[bin]]
+name = "y2020d03"
+path = "src/day03/main.rs"
+
+[[bin]]
+name = "y2020d04"
+path = "src/day04/main.rs"
+
+[[bin]]
+name = "y2020d05"
+path = "src/day05/main.rs"

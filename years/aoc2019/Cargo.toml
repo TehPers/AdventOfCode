@@ -1,0 +1,13 @@
+[package]
+name = "aoc2019"
+version = "0.1.0"
+authors = ["TehPers <tehperz@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+anyhow = "1"
+nom = "6"
+
+[[bin]]
+name = "y2019d03"
+path = "src/day03/main.rs"
