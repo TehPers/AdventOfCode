@@ -53,8 +53,8 @@ fn part1(input: &'static str) -> anyhow::Result<usize> {
             || constraints
                 .get(container)
                 .iter()
-                .flat_map(|constraint| constraint.iter().map(|(container, _)| container))
-                .any(|container| can_contain(constraints, bag, container))
+                .flat_map(|constraint| constraint.iter().map(|(child, _)| child))
+                .any(|child| can_contain(constraints, bag, child))
     }
 
     let constraints = input
@@ -68,8 +68,7 @@ fn part1(input: &'static str) -> anyhow::Result<usize> {
 
     let valid_bags = constraints
         .keys()
-        .filter(|&bag| bag != &"shiny gold")
-        .filter(|bag| can_contain(&constraints, "shiny gold", bag))
+        .filter(|&bag| bag != &"shiny gold" && can_contain(&constraints, "shiny gold", bag))
         .count();
 
     Ok(valid_bags)

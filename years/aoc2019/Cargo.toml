@@ -7,6 +7,15 @@ edition = "2018"
 [dependencies]
 anyhow = "1"
 nom = "6"
+itertools = "0.9"
+
+[[bin]]
+name = "y2019d01"
+path = "src/day01/main.rs"
+
+[[bin]]
+name = "y2019d02"
+path = "src/day02/main.rs"
 
 [[bin]]
 name = "y2019d03"
