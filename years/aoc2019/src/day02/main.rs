@@ -1,7 +1,8 @@
 #[path = "../lib/intcode.rs"]
 mod intcode;
 
-use anyhow::{ Context};
+use anyhow::Context;
+use itertools::Itertools;
 
 const INPUT: &str = include_str!("input.txt");
 
@@ -17,7 +18,7 @@ fn part2() -> anyhow::Result<usize> {
     let source: Vec<usize> = INPUT.split(',').flat_map(|s| s.parse()).collect();
     let mut memory = vec![0; source.len()];
     let result = (0..100)
-        .flat_map(|noun| (0..100).map(move |verb| (noun, verb)))
+        .cartesian_product(0..100)
         .find(|&(noun, verb)| {
             memory.copy_from_slice(&source);
             memory[1] = noun;
