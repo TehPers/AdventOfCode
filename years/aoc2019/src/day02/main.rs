@@ -2,20 +2,25 @@
 mod intcode;
 
 use anyhow::Context;
+use intcode::MemoryValue;
 use itertools::Itertools;
 
 const INPUT: &str = include_str!("input.txt");
 
-fn part1() -> anyhow::Result<usize> {
-    let mut memory: Vec<usize> = INPUT.split(',').flat_map(|s| s.parse()).collect();
+fn part1(input: &'static str) -> anyhow::Result<MemoryValue> {
+    let mut memory: Vec<MemoryValue> = input.split(',').flat_map(|s| s.parse()).collect();
     memory[1] = 12;
     memory[2] = 2;
-    intcode::run(&mut memory)?;
+    intcode::run(
+        &mut memory,
+        &mut std::io::stdin().lock(),
+        &mut std::io::stdout().lock(),
+    )?;
     Ok(memory[0])
 }
 
-fn part2() -> anyhow::Result<usize> {
-    let source: Vec<usize> = INPUT.split(',').flat_map(|s| s.parse()).collect();
+fn part2(input: &'static str) -> anyhow::Result<MemoryValue> {
+    let source: Vec<MemoryValue> = input.split(',').flat_map(|s| s.parse()).collect();
     let mut memory = vec![0; source.len()];
     let result = (0..100)
         .cartesian_product(0..100)
@@ -23,7 +28,12 @@ fn part2() -> anyhow::Result<usize> {
             memory.copy_from_slice(&source);
             memory[1] = noun;
             memory[2] = verb;
-            intcode::run(&mut memory).unwrap();
+            intcode::run(
+                &mut memory,
+                &mut std::io::stdin().lock(),
+                &mut std::io::stdout().lock(),
+            )
+            .unwrap();
             memory[0] == 19690720
         })
         .map(|(noun, verb)| 100 * noun + verb)
@@ -33,8 +43,8 @@ fn part2() -> anyhow::Result<usize> {
 }
 
 fn main() -> anyhow::Result<()> {
-    println!("part 1: {}", part1()?);
-    println!("part 2: {}", part2()?);
+    println!("part 1: {}", part1(INPUT)?);
+    println!("part 2: {}", part2(INPUT)?);
 
     Ok(())
 }
