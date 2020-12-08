@@ -1,30 +1,38 @@
-use anyhow::bail;
+use anyhow::{bail, Context};
 use itertools::Itertools;
 use std::{
     collections::HashMap,
     convert::TryInto,
-    io::{BufRead, Write},
 };
 
 pub type MemoryValue = i64;
 
-#[derive(Debug)]
-pub struct IntCodeComputer<'m> {
+pub struct IntCodeComputer<'m, R, W>
+where
+    R: FnMut() -> anyhow::Result<Option<MemoryValue>>,
+    W: FnMut(MemoryValue) -> anyhow::Result<()>,
+{
     pub base_memory: &'m mut [MemoryValue],
     pub additional_memory: HashMap<usize, MemoryValue>,
     pub relative_base: i64,
     pub ip: usize,
-    input_buffer: String,
+    read: R,
+    write: W,
 }
 
-impl<'m> IntCodeComputer<'m> {
-    pub fn new(base_memory: &'m mut [MemoryValue]) -> Self {
+impl<'m, R, W> IntCodeComputer<'m, R, W>
+where
+    R: FnMut() -> anyhow::Result<Option<MemoryValue>>,
+    W: FnMut(MemoryValue) -> anyhow::Result<()>,
+{
+    pub fn new(base_memory: &'m mut [MemoryValue], read: R, write: W) -> Self {
         IntCodeComputer {
             base_memory,
             additional_memory: HashMap::new(),
             relative_base: 0,
             ip: 0,
-            input_buffer: String::with_capacity(64),
+            read,
+            write,
         }
     }
 
@@ -86,11 +94,7 @@ impl<'m> IntCodeComputer<'m> {
         }
     }
 
-    pub fn step(
-        &mut self,
-        istream: &mut impl BufRead,
-        ostream: &mut impl Write,
-    ) -> anyhow::Result<bool> {
+    pub fn step(&mut self) -> anyhow::Result<bool> {
         let instruction = self.immediate(self.ip);
         let opcode = instruction % 100;
         let (p1_mode, p2_mode, p3_mode) = (
@@ -120,11 +124,7 @@ impl<'m> IntCodeComputer<'m> {
             }
             3 => {
                 // read int
-                write!(ostream, "? ")?;
-                ostream.flush()?;
-                istream.read_line(&mut self.input_buffer)?;
-
-                let input = self.input_buffer.trim_end().parse()?;
+                let input = (self.read)()?.context("unexpected end of input")?;
                 let target = self.get_parameter_mut(p1_mode, p1_addr)?;
                 *target = input;
 
@@ -132,8 +132,8 @@ impl<'m> IntCodeComputer<'m> {
             }
             4 => {
                 // write int
-                let value = self.get_parameter_mut(p1_mode, p1_addr)?;
-                writeln!(ostream, "> {}", value)?;
+                let value = self.get_parameter(p1_mode, p1_addr)?;
+                (self.write)(value)?;
 
                 self.ip += 2;
             }
@@ -193,13 +193,12 @@ impl<'m> IntCodeComputer<'m> {
         Ok(true)
     }
 
-    pub fn run(
-        &mut self,
-        istream: &mut impl BufRead,
-        ostream: &mut impl Write,
-    ) -> anyhow::Result<()> {
-        while self.step(istream, ostream)? {}
-        Ok(())
+    pub fn run(&mut self) -> anyhow::Result<usize> {
+        let mut steps = 0;
+        while self.step()? {
+            steps += 1;
+        }
+        Ok(steps)
     }
 
     #[allow(dead_code)]
