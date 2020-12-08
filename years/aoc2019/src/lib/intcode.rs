@@ -81,7 +81,7 @@ pub fn run(
     ostream: &mut impl Write,
 ) -> anyhow::Result<()> {
     let mut ip = 0;
-    let mut buffer = String::with_capacity(4);
+    let mut buffer = String::with_capacity(64);
     loop {
         let instruction = immediate(memory, ip)?;
         let opcode = instruction % 100;
