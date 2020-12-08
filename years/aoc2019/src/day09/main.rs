@@ -19,7 +19,7 @@ fn main() -> anyhow::Result<()> {
     run(&mut memory.clone(), b"1")?;
 
     println!("part 2:");
-    run(&mut memory, b"5")?;
+    run(&mut memory, b"2")?;
 
     Ok(())
 }
