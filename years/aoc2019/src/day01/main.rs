@@ -24,3 +24,14 @@ pub fn main() {
     println!("part 1: {}", part1(INPUT));
     println!("part 2: {}", part2(INPUT));
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn it_works() {
+        assert_eq!(part1(INPUT), 3249817);
+        assert_eq!(part2(INPUT), 4871866);
+    }
+}

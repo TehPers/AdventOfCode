@@ -23,7 +23,7 @@ fn parse_input(input: &str) -> anyhow::Result<Vec<Instruction>> {
         .map(|line| {
             let mut parts = line.split(' ');
             let opcode = parts.next().context("missing opcode")?;
-            let arg: i32 = parts.next().context("missing opcode")?.parse()?;
+            let arg: i32 = parts.next().context("missing arg")?.parse()?;
             let instruction = match opcode {
                 "nop" => Instruction::Nop(arg),
                 "jmp" => Instruction::Jmp(arg),

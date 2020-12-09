@@ -51,9 +51,32 @@ fn part2(source: &mut [MemoryValue]) -> anyhow::Result<MemoryValue> {
 }
 
 fn main() -> anyhow::Result<()> {
-    let mut memory: Vec<MemoryValue> = INPUT.split(',').flat_map(|s| s.parse()).collect();
+    let mut memory: Vec<MemoryValue> = INPUT
+        .trim_end()
+        .split(',')
+        .map(|s| s.parse())
+        .collect::<Result<_, _>>()?;
+
     println!("part 1: {}", part1(&mut memory.clone())?);
     println!("part 2: {}", part2(&mut memory)?);
 
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn it_works() {
+        let mut memory: Vec<MemoryValue> = INPUT
+            .trim_end()
+            .split(',')
+            .map(|s| s.parse())
+            .collect::<Result<_, _>>()
+            .unwrap();
+
+        assert_eq!(part1(&mut memory.clone()).unwrap(), 3895705);
+        assert_eq!(part2(&mut memory).unwrap(), 6417);
+    }
 }
